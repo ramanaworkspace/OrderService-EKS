@@ -1,0 +1,58 @@
+name: Build & Deploy WebAPI to EKS
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  ECR_REPOSITORY: orderservice
+  K8S_NAMESPACE: orderservice
+  DEPLOYMENT_NAME: orderservice-deployment
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1️⃣ Checkout code
+    - name: Checkout source
+      uses: actions/checkout@v4
+
+    # 2️⃣ Configure AWS credentials
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    # 3️⃣ Login to ECR
+    - name: Login to Amazon ECR
+      uses: aws-actions/amazon-ecr-login@v2
+
+    # 4️⃣ Build, tag, push Docker image
+    - name: Build and push Docker image
+      id: build-image
+      run: |
+        IMAGE_TAG=${GITHUB_SHA::7}
+        IMAGE_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${ECR_REPOSITORY}:${IMAGE_TAG}
+
+        docker build -t $IMAGE_URI ./src
+        docker push $IMAGE_URI
+
+        echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
+
+    # 5️⃣ Update kubeconfig
+    - name: Update kubeconfig
+      run: |
+        aws eks update-kubeconfig \
+          --region ${{ secrets.AWS_REGION }} \
+          --name ${{ secrets.EKS_CLUSTER_NAME }}
+
+    # 6️⃣ Deploy to EKS
+    - name: Deploy to EKS
+      run: |
+        sed -i "s|IMAGE_URI|${IMAGE_URI}|g" deployment/orderservice.yaml
+        kubectl apply -f deployment/orderservice.yaml
+        kubectl rollout status deployment/${DEPLOYMENT_NAME} -n ${K8S_NAMESPACE}
