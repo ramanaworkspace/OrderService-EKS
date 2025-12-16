@@ -36,12 +36,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: orderservice-api-service
+  name: orderservice
   namespace: orderservice
 spec:
   type: LoadBalancer
   selector:
-    app: orderservice-api
+    app: orderservice
   ports:
     - name: http
       port: 80       # external port
