@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orderservice
+  namespace: orderservice
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: orderservice
+  template:
+    metadata:
+      labels:
+        app: orderservice
+    spec:
+      containers:
+        - name: orderservice
+          image: 895577162938.dkr.ecr.us-east-1.amazonaws.com/orderservice:v1
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          env:
+            # Example environment variables – adjust/remove as per your app
+            - name: ASPNETCORE_ENVIRONMENT
+              value: "Production"
+            # - name: ConnectionStrings__DefaultConnection
+            #   value: "Server=...;Database=...;User Id=...;Password=..."
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orderservice-api-service
+  namespace: orderservice
+spec:
+  type: LoadBalancer
+  selector:
+    app: orderservice-api
+  ports:
+    - name: http
+      port: 80       # external port
+      targetPort: 80 # container port
+      protocol: TCP

@@ -52,3 +52,4 @@ coverage/
 /.vs/OrderService/CopilotIndices/17.14.878.3237/*.db-shm
 /.vs/OrderService/CopilotIndices/17.14.878.3237/*.db-wal
 /.vs/ProjectEvaluation/*
+/.vs/*

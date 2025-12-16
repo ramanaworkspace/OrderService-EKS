@@ -20,6 +20,6 @@ if (app.Environment.IsDevelopment())
 app.MapControllers();
 
 // Health endpoint (for Kubernetes)
-app.MapHealthChecks("/health");
+app.MapHealthChecks("/health").AllowAnonymous();
 
 app.Run();
