@@ -53,6 +53,6 @@ jobs:
     # 6️⃣ Deploy to EKS
     - name: Deploy to EKS
       run: |
-        sed -i "s|IMAGE_URI|${IMAGE_URI}|g" deployment/orderservice.yaml
-        kubectl apply -f deployment/orderservice.yaml
-        kubectl rollout status deployment/${DEPLOYMENT_NAME} -n ${K8S_NAMESPACE}
+        sed -i "s|IMAGE_URI|${IMAGE_URI}|g" src/deployment/orderservice.yaml
+        kubectl apply -f src/deployment/orderservice.yaml
+        kubectl rollout status src/deployment/${DEPLOYMENT_NAME} -n ${K8S_NAMESPACE}
